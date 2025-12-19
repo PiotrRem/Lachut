@@ -1,0 +1,24 @@
+"testq"
+
+pytanie = "Jak się nazywa stolica Polski?"
+P = "Warszawa"
+F = "Łódż"
+F = "Kraków"
+F = "Bruksela"
+limit = 10
+
+pytanie= "2 * 2 = "
+P = "4"
+F = "5"
+F = "2"
+limit = 5
+
+pytanie= "Jakiego koloru jest czerwony maluch"
+P="czerwony"
+F ="czarny"
+
+pytanie ="Jaki kolor naturalnie mają kwiaty róży?"
+P="żółty"
+P="różowy"
+P="biały"
+P="czerwony

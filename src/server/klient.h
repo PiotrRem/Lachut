@@ -8,9 +8,32 @@
 #include<sstream>
 #include<vector>
 #include<sys/socket.h>
+#include<fcntl.h>
 
 #define RBUFSIZE 64
 #define WBUFSIZE 1024
+
+#include "uzytkownik.h"
+#include "quiz.h"
+
+class MenegerPokoi{
+    private:
+        MenegerPokoi(){};
+        ~MenegerPokoi() = default;
+        MenegerPokoi(const MenegerPokoi&) = delete;
+        MenegerPokoi& operator=(const MenegerPokoi&) = delete;
+
+    protected:
+        std::map<int, unsigned int> pokoje; // fd Klienta -> id instancji quizu
+
+    public:
+        static MenegerPokoi& the();
+        unsigned int znajdzPokoj(int fd);
+        bool dodajDoPokoju(int fd, unsigned int idQuizu);
+        bool usunPokoj(unsigned int idQuizu);
+        bool usunGoscia(int fd);
+        std::set<int> znajdzGosci(unsigned int idQuizu);
+};
 
 class Klient{
     protected:
@@ -26,11 +49,14 @@ class Klient{
         void zacznijPobieracPlik(size_t dlu);
         void pobierajPlik();
         void zakonczPobieraniePliku();
+        bool wyslijWiadomosc(std::string wiadomosc);
 
     public:
+        ~Klient();
         Klient(){}
         Klient(int fd);
         bool obsluzZdarzenie();
+        void usun();
 };
 
 #endif // KLIENT_H

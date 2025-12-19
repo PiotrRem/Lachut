@@ -1,8 +1,5 @@
 #include "quiz.h"
 
-#include <string>
-#include <vector>
-
 Pytanie::Pytanie(){}
 void Pytanie::setTresc(std::string tresc){this->tresc=tresc;}
 void Pytanie::setLimitCzasu(unsigned int limit){this->limitCzasu=limit;}
@@ -16,11 +13,20 @@ void Pytanie::wypisz(){
     std::cout<<"limit: " << limitCzasu << std::endl;
 }
 
-std::vector<std::pair<std::string, bool>>Pytanie::getOdpowiedzi(){
+std::vector<std::pair<std::string, bool>> Pytanie::getOdpowiedzi(){
     return odpowiedzi;
 }
 
+std::string Pytanie::getTrescZOdpowiedziami(){
+    std::string wynik = tresc;
+    for(auto it : odpowiedzi){
+        tresc += " ";
+        tresc += it.first;
+    }
+    return wynik;
+}
 
+//-------------------------------------------------------------------------------------------------------------
 Quiz::Quiz(){}
 void Quiz::setNazwa(std::string nazwa){this->nazwa=nazwa;}
 void Quiz::dodajPytanie(Pytanie pytanie){pytania.push_back(pytanie);}
@@ -44,11 +50,24 @@ bool Quiz::waliduj(){
     return true;
 }
 
+Pytanie Quiz::getPytanie(unsigned int id){
+    if(pytania.size() <= id) return pytania[0];
+    return pytania[id];
+}
+
+unsigned int Quiz::ilePytan(){
+    return pytania.size();
+}
+
 BazaQuizow::BazaQuizow(){};
+BazaQuizow& BazaQuizow::the() {
+    static BazaQuizow instance; // tworzy się raz, wątkowo-bezpieczne (C++11+)
+    return instance;
+}
 
 bool BazaQuizow::dodajQuiz(std::string nazwaPliku){
     Quiz quiz;
-    ParserQuizu parser(nazwaPliku, &quiz);
+    ParserQuizu parser("quizSource/" + nazwaPliku + ".qcf", &quiz);
     bool result =  parser.parsujQuiz();
     if(!result) return false;
     if(!quiz.waliduj()) return false;
@@ -56,8 +75,36 @@ bool BazaQuizow::dodajQuiz(std::string nazwaPliku){
     return true;
 }
 
+Quiz BazaQuizow::getQuiz(std::string nazwa){
+    for(auto it : bazaQuizow){
+        if(it.getNazwa()==nazwa) return it;
+    }
+    if(dodajQuiz(nazwa)) for(auto it : bazaQuizow){
+        if(it.getNazwa()==nazwa) return it;
+    }
+    return Quiz();
+}
+
 void BazaQuizow::wypiszTrescQuizu(int id){
     bazaQuizow[id].wypisz();
+}
+
+std::string BazaQuizow::getListaQuizow(){
+    std::vector<std::string> pliki;
+
+    for (const auto& entry : std::filesystem::directory_iterator("quizSource")) {
+        if (entry.is_regular_file()) {
+            std::string nazwa = entry.path().filename().string().substr(0, entry.path().filename().string().length() - 4);
+            pliki.push_back(nazwa);
+        }
+    }
+
+    std::string out;
+    for (const auto& p : pliki) {
+        out += p;
+        out += '\n';
+    }
+    return out;
 }
 
 ParserQuizu::ParserQuizu(std::string nazwaPliku,  Quiz* quiz){

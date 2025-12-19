@@ -36,6 +36,7 @@ protected:
     }
     void usun_klienta(int fd){
         std::cout << "Rozłączanie klienta fd=" << fd << std::endl;
+        klienci[fd].usun();
         epoll_ctl(efd, EPOLL_CTL_DEL, fd, nullptr);
         shutdown(fd, SHUT_RDWR);
         close(fd);
@@ -72,6 +73,12 @@ public:
         epoll_event ev;
         while(1){
             if(epoll_wait(efd, &ev, 1, -1)==-1) error(1, errno, "epoll_wait nie powiodło się");
+
+            while(true){
+                int doRozlaczenia = MenegerQuizow::the().getKlientDoRozlaczenia();
+                if(doRozlaczenia==-1) break;
+                usun_klienta(doRozlaczenia);
+            }
             
             if(ev.data.fd==sfd){
                 sockaddr_in remoteAddr={};
@@ -112,9 +119,8 @@ int main(int argc, char** argv){
     if(argc!=2) error(1, 0, "Podaj 1 argument - numer portu");
     signal(SIGINT, ctrl_c);
 
-    BazaQuizow bazaQuizow;
-    if(!bazaQuizow.dodajQuiz("quizSource/quiz2.qcf")) std::cout<<"quiz zawiera błędy!\n";
-    else bazaQuizow.wypiszTrescQuizu(0);
+    if(!BazaQuizow::the().dodajQuiz("Quiz czwarty Żółć")) std::cout<<"quiz zawiera błędy!\n";
+    else BazaQuizow::the().wypiszTrescQuizu(0);
 
     serwer = new Serwer(argv[1]);
     serwer->obsluguj();

@@ -5,6 +5,10 @@
 #include<vector>
 #include<fstream>
 #include<iostream>
+#include<map>
+#include<string>
+#include<vector>
+#include<filesystem>
 
 class Pytanie{
     protected:
@@ -20,6 +24,7 @@ class Pytanie{
         void wypisz();
         std::vector<std::pair<std::string, bool>> getOdpowiedzi();
         std::string getTresc();
+        std::string getTrescZOdpowiedziami();
         unsigned int getLimitCzasu();
 };
 
@@ -35,17 +40,27 @@ class Quiz{
         void wypisz();
 
         std::string getNazwa();
+        Pytanie getPytanie(unsigned int id);
+        unsigned int ilePytan();
         bool waliduj();
 };
 
 class BazaQuizow{
     protected:
         std::vector<Quiz> bazaQuizow;
-    
+
+        BazaQuizow();                         // prywatny konstruktor
+        ~BazaQuizow() = default;
+
+        BazaQuizow(const BazaQuizow&) = delete;
+        BazaQuizow& operator=(const BazaQuizow&) = delete;
+        
     public:
-        BazaQuizow();
+        static BazaQuizow& the();
         bool dodajQuiz(std::string nazwaPliku);
         void wypiszTrescQuizu(int id);
+        Quiz getQuiz(std::string nazwa);
+        std::string getListaQuizow();
 };
 
 class ParserQuizu{
