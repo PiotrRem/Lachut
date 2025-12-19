@@ -1,4 +1,15 @@
 # Łachut
+## Wymagania funkcjonalne
+- Użytkownik (twórca quizu) łączy się z serwerem i wybiera quiz do wystartowania. Otrzymuje wówczas kod quizu. Jeden użytkownik może mieć w danym momencie uruchomiony jeden quiz. Nie może być jednocześnie uczestnikiem i twórcą. Serwer obsługuje wiele quizów na raz.
+- Użytkownik (uczestnik) łączy się z serwerem, podaje kod quizu i do niego dołącza, podając nick. Jeżeli w quizie ktoś inny podał taki nick, serwer prosi o jego zmianę. Jeśli quiz jest już uruchomiony serwer odrzuca zapytanie.
+- Gdy pojawi się co najmniej 1 uczestnik quizu, twórca quizu może uruchomić zadawanie pytań.
+- Uczestnicy quizu odpowiadają na pytania. Punkty przyznawane są za poprawność i prędkość odpowiedzi. Użytkownik może odpowiedzieć na pytanie tylko, jeżeli odpowiedziało na nie mniej niż 2/3 uczestników lub nie upłynął czas przeznaczony na to pytanie.
+- Twórca quizu widzi punktację zarówno bieżącą, jak i ostateczną. Uczestnicy quizu mogą zobaczyć jedynie swoją bieżącą punktację i ostateczną punktację wszystkich uczestników. Po zakończeniu ostatniego pytania uczestnikom quizu i jego twórcy prezentowany jest ranking uczestników.
+- Użytkownik może wgrać własny quiz na serwer, przesyłając plik o określonej strukturze.
+Jeśli plik przejdzie proces walidacji, zapisany w nim quiz staje się dostępny do wystartowania.
+W przeciwnym wypadku użytkownik zostanie powiadomiony o błędzie.
+- Po zakończeniu quizu zarówno twórca quizu, jak i jego uczestnicy są rozłączani.
+
 ## Jak skomunikować serwer i klienta?
 ### Klient
 
@@ -7,7 +18,7 @@ Na razie przewidujemy, że:
     * LIST  -> by poprosić o listę quizów do wystartowania.
     * PICK <nazwa_quizu> -> by wybrać quiz z listy.
     * LAUNCH -> by wystartować wybrany quiz.
-    * JOIN <id_trwającego_quizu> -> by dołączyć do trwającego quizu.
+    * JOIN <id_oczekującego_quizu> -> by dołączyć do trwającego quizu.
     * NICK <nick> -> by ustawić sobie nick.
     * ANSWER <nr_pytania> <nr_odpowiedzi> <nr_odpowiedzi>... -> by udzielić odpowiedzi na pytanie w quizie.
     * GETRANK -> by poprosić o podanie rankingu. Twórca quizu otrzyma cały ranking, uczestnik jedynie liczbę swoich punktów.
@@ -66,3 +77,4 @@ Na razie przewidujemy, że:
 2. Jeżeli wszyscy uczestnicy quizu rozłączą się w jego trakcie, quiz zostanie natychmiast zakończony.
 3. Uczestnicy, którzy rozłączyli się przed zakończeniem quizu, nie zostaną uwzględnieni w końcowym rankingu.
 4. Warunek: "jeżeli na pytanie odpowiedziało mniej niż 2/3 uczestników" tyczy się liczby obecnej liczby uczestników (nie początkowej).
+5. Jeżeli uczestnik nie poda nicku, zostanie mu przydzielony nick rodzaju NONAME<jakaś liczba>.
