@@ -14,27 +14,36 @@ W przeciwnym wypadku użytkownik zostanie powiadomiony o błędzie.
 ### Klient
 
 Na razie przewidujemy, że:
-1. Klient może wysłać do serwera komunikaty o następującej strukturze:
-    * LIST  -> by poprosić o listę quizów do wystartowania.
-    * PICK <nazwa_quizu> -> by wybrać quiz z listy.
-    * LAUNCH -> by wystartować wybrany quiz.
-    * JOIN <id_oczekującego_quizu> -> by dołączyć do trwającego quizu.
-    * NICK <nick> -> by ustawić sobie nick.
-    * ANSWER <nr_pytania> <nr_odpowiedzi> <nr_odpowiedzi>... -> by udzielić odpowiedzi na pytanie w quizie.
-    * GETRANK -> by poprosić o podanie rankingu. Twórca quizu otrzyma cały ranking, uczestnik jedynie liczbę swoich punktów.
-    * POST <długość_pliku> <plik> -> by przesłać na serwer plik z quizem.
-    * EXIT -> by poinformować o tym, że się rozłącza.
+1. a) Twórca quizu może wysłać do serwera komunikaty o następującej strukturze:
+    * `POST <długość_pliku>`  
+    `<plik>` -> by przesłać na serwer plik z quizem.
+    * `LIST` -> by poprosić o listę quizów do wystartowania.
+    * `SETUP <quiz_id>` -> by otrzymać kod do quizu.
+    * `LAUNCH <quiz_id>` -> by wystartować wybrany quiz.
+    * `GETRANK` -> by poprosić o podanie całego rankingu.  uczestnik jedynie liczbę swoich punktów.
+    * `SKIP` -> by pominąć aktualne pytanie.
+    * `STATUS` -> by zapytać o informacje związane z quizem, np. aktualny numer pytania.
+    * `EXIT` -> by poinformować o tym, że się rozłącza.
+
+    b) Uczestnik:
+    * `JOIN <id_oczekującego_quizu>` -> by dołączyć do trwającego quizu.
+    * `NICK <nick>` -> by ustawić sobie nick.
+    * `ANSWER <nr_pytania> <nr_odpowiedzi> <nr_odpowiedzi>...` -> by udzielić odpowiedzi na pytanie w quizie.
+    * `MYSCORE` -> by otrzymać swój wynik.
+    * `EXIT` -> by poinformować o tym, że się rozłącza.
 2. Przy czym wszystkie te wiadomości (z wyjatkiem pliku z POST) są wysyłane jako jedna linia.
 
 ### Serwer
 1. Wysyła do klienta następujące komunikaty:
-    * FAIL <komenda_która_nawaliła> <treść_błędu> -> jeśli żądana operacja się nie powiedzie.
-    * OK <komenda_która_powiodła_się> -> potwierdzenie, że udało się zmienić nick / wczytać przesłany quiz / wystartować quiz itp.
-    * YOURID <id_quizu_do_wystartowania> -> wiadomość z id quizu, który należy podać uczestnikom quizu, by mogli do niego dołączyć.
-    * YOURRANK <liczba_punktow> -> bieżąca liczba punktów w quizie.
-    * LIST <długość_pliku> <plik> -> plik z listą quizów do wyboru.
-    * RANK <długość_pliku> <plik> -> plik z całkowitą punktacją wszystkich graczy. Wysyłany po zakończeniu quizu do wszytkich, a do twórcy za każdym razem, gdy o niego poprosi.
-    * QUESTION "Treść pytania" "odp 1" "odp 2"... -> treść pytania z listą odpowiedzi do wyboru.
+    * `FAIL <komenda_która_nawaliła> <treść_błędu> `-> jeśli żądana operacja się nie powiedzie.
+    * `OK <komenda_która_powiodła_się>` -> potwierdzenie, że udało się zmienić nick / wczytać przesłany quiz / wystartować quiz itp.
+    * `YOURID <id_quizu_do_wystartowania>` -> wiadomość z id quizu, który należy podać uczestnikom quizu, by mogli do niego dołączyć.
+    * `YOURRANK` <liczba_punktow> -> bieżąca liczba punktów w quizie.
+    * `LIST <długość_pliku>`  
+    `<plik>` -> plik z listą quizów do wyboru.
+    * `RANK <długość_pliku>`  
+    `<plik>` -> plik z całkowitą punktacją wszystkich graczy. Wysyłany po zakończeniu quizu do wszytkich, a do twórcy za każdym razem, gdy o niego poprosi.
+    * `QUESTION <nr_pytania> "Treść pytania" "odp 1" "odp 2"...` -> treść pytania z listą odpowiedzi do wyboru.
 2. Serwer również wysyła wszystkie wiadomości jako jedna linia (oprócz plików).
 3. W LIST pierwsza linia zawiera komendę i długość pliku w bajtach. Każda kolejna zawiera unikalną nazwę quziu.
 4. W RANK pierwsza linia zawiera RANK i długość pliku w bajtach. Każda kolejna zawiera nick gracza i liczbę punktów przez niego zdobytych. Lista może być nieposortowana.
