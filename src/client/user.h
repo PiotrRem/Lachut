@@ -12,6 +12,8 @@ protected:
     NetworkClient *netClient = nullptr;
     QuizInfo currQuiz;
 public:
+    virtual ~User() = default;
+
     NetworkClient& getNetClient() { return *netClient; }
     QuizInfo&      getQuizInfo() { return currQuiz; }
 
@@ -20,6 +22,9 @@ public:
 
     int connect(const std::string &host, const std::string &port);
     virtual int exit();
+    virtual int proposeNickname(const std::string&) {
+        return -1;
+    }
 };
 
 
@@ -56,7 +61,7 @@ public:
     void setAnswer(QuizAnswer &qa) { questAnswer = qa; }
 
     int joinQuiz();
-    int proposeNickname(const std::string &nickname);
+    int proposeNickname(const std::string &nickname) override;
     int answer(const QuizAnswer &ans);
     int getOwnScore();
     int getRanking();

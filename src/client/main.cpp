@@ -1,27 +1,12 @@
-#include "network.h"
+#include <QApplication>
+#include "mainWindow.h"
 
-#include <iostream>
-#include <thread>
-#include <chrono>
-#include <unistd.h>
+int main(int argc, char **argv)
+{
+    QApplication app(argc, argv);
 
-int main() {
-    NetworkClient netClient;
+    MainWindow w;
+    w.show();
 
-    netClient.connectToServer("localhost", "4444");
-
-    while (true) {
-        netClient.queueMessage("JOIN 123432\n");
-
-        netClient.pollEvents();
-
-        while (netClient.hasMessage()) {
-            std::string msg = netClient.popMessage();
-            std::cout << "otrzymano: " << msg << '\n';
-        }
-
-        sleep(1);
-    }
-
-    return 0;
+    return app.exec();
 }
