@@ -3,11 +3,6 @@
 
 // UŻYTKOWNIK
 
-int User::connect(const std::string &host, const std::string &port) {
-    netClient->connectToServer(host, port);
-    return 0;
-}
-
 int User::exit() {
     netClient->queueMessage("EXIT\n");
     return 0;
@@ -16,8 +11,8 @@ int User::exit() {
 
 // TWÓRCA QUIZU : UŻYTKOWNIK
 
-int QuizHoster::postQuiz() {
-    netClient->queueFile(quizFile);
+int QuizHoster::postQuiz(const QuizFile &qf) {
+    netClient->queueFile(qf.path, qf.size);
     return 0;
 }
 
@@ -27,22 +22,17 @@ int QuizHoster::listQuizzes() {
 }
 
 int QuizHoster::setupQuiz() {
-    netClient->queueMessage("SETUP " + std::to_string(currQuiz.quizId) + '\n');
+    netClient->queueMessage("SETUP " + std::to_string(quizId) + "\n");
     return 0;
 }
 
-int QuizHoster::startQuiz() {
-    netClient->queueMessage("LAUNCH " + quizCode + '\n');
+int QuizHoster::launchQuiz() {
+    netClient->queueMessage("LAUNCH " + quizCode + "\n");
     return 0;
 }
 
 int QuizHoster::getRanking() {
     netClient->queueMessage("GETRANK\n");
-    return 0;
-}
-
-int QuizHoster::skipQuestion() {
-    netClient->queueMessage("SKIP\n");
     return 0;
 }
 
@@ -54,31 +44,31 @@ int QuizHoster::checkQuizStatus() {
 
 // UCZESTNIK : UŻYTKOWNIK          
 
-int QuizUser::joinQuiz() {
-    netClient->queueMessage("JOIN " + std::to_string(currQuiz.quizId) + '\n');
+int QuizPlayer::joinQuiz(const std::string &code) {
+    netClient->queueMessage("JOIN " + code + "\n");
     return 0;
 }
 
-int QuizUser::proposeNickname(const std::string &nickname) {
-    netClient->queueMessage("NICK " + nickname + '\n');
+int QuizPlayer::proposeNickname(const std::string &nick) {
+    netClient->queueMessage("NICK " + nick + "\n");
     return 0;
 }
 
-int QuizUser::answer(const QuizAnswer &ans) {
+int QuizPlayer::answer(int questionId, int answerId) {
     std::string msg = "ANSWER " +
-        std::to_string(ans.questionId) + " " +
-        std::to_string(ans.answerId) + '\n';
+        std::to_string(questionId) + " " +
+        std::to_string(answerId) + "\n";
 
     netClient->queueMessage(msg);
     return 0;
 }
 
-int QuizUser::getOwnScore() {
+int QuizPlayer::getOwnScore() {
     netClient->queueMessage("GETRANK\n");
     return 0;
 }
 
-int QuizUser::getRanking() {
+int QuizPlayer::getRanking() {
     netClient->queueMessage("GETRANK\n");
     return 0;
 }

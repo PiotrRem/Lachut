@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QStackedWidget>
+#include <QFileDialog>
 #include <QTimer>
 
 #include "ui_Connect.h"
@@ -13,6 +14,7 @@
 #include "ui_Waiting.h"
 #include "ui_Question.h"
 #include "ui_Summary.h"
+#include "ui_Join.h"
 
 #include "network.h"
 #include "user.h"
@@ -26,14 +28,14 @@ public:
         connect(ui->connectBtn, &QPushButton::clicked, this, [this]() { 
             QString ip   = ui->ipInput->text();
             QString port = ui->portInput->text();
-            emit goNext(ip, port);
+            emit connectToServer(ip, port);
         });
     }
 
     ~wConnect() { delete ui; }
 
 signals:
-    void goNext(QString ip, QString port);
+    void connectToServer(QString ip, QString port);
 
 private:
     Ui::wConnect *ui;
@@ -89,16 +91,46 @@ class wSetup : public QWidget {
 public:
     explicit wSetup(QWidget *parent = nullptr) : QWidget(parent), ui(new Ui::wSetup) {
         ui->setupUi(this);
-        connect(ui->pushButton_5, &QPushButton::clicked, this, [this](){ emit goNext(); });
+        connect(ui->listBtn, &QPushButton::clicked, this, [this]() {
+            emit listQuizzes();
+        });
+        connect(ui->fileBtn, &QPushButton::clicked, this, [this]() {
+            QString path = QFileDialog::getOpenFileName(
+                this, "Wybierz plik quizu", "quizSource", "Quiz files (*.qcf)"
+            );
+            emit selectQuizFile(path);
+        });
+        connect(ui->sendBtn, &QPushButton::clicked, this, [this]() {
+            emit postQuiz();
+        });
+        connect(ui->selectBtn, &QPushButton::clicked, this, [this]() {
+            emit selectQuiz(ui->idSpinBox->value());
+        });
+        connect(ui->codeBtn, &QPushButton::clicked, this, [this]() {
+            emit requestCode();
+        });
+        connect(ui->launchBtn, &QPushButton::clicked, this, [this]() {
+            emit launchQuiz();
+        });
+    }
+
+    void showList(const QString &text) {
+        ui->quizzes->setPlainText(text);
     }
 
     ~wSetup() { delete ui; }
 
 signals:
-    void goNext();
+    void listQuizzes();
+    void selectQuizFile(const QString &path);
+    void postQuiz();
+    void selectQuiz(int quizId);
+    void requestCode();
+    void launchQuiz();
 
 private:
     Ui::wSetup *ui;
+    QString filePath;
 };
 
 
@@ -108,6 +140,10 @@ public:
     explicit wPanel(QWidget *parent = nullptr) : QWidget(parent), ui(new Ui::wPanel) {
         ui->setupUi(this);
         connect(ui->pushButton, &QPushButton::clicked, this, [this](){ emit goNext(); });// TODO: USUNĄĆ
+    }
+
+    void showRank(const QString &text) {
+        ui->textBrowser->setPlainText(text);
     }
 
     ~wPanel() { delete ui; }
@@ -143,17 +179,25 @@ class wQuestion : public QWidget {
 public:
     explicit wQuestion(QWidget *parent = nullptr) : QWidget(parent), ui(new Ui::wQuestion) {
         ui->setupUi(this);
-
-        auto handler = [this](){ emit goNext(); };
-        connect(ui->btn1, &QPushButton::clicked, this, handler);
-        connect(ui->btn2, &QPushButton::clicked, this, handler);
-        connect(ui->btn3, &QPushButton::clicked, this, handler);
-        connect(ui->btn4, &QPushButton::clicked, this, handler);
+        connect(ui->btn1, &QPushButton::clicked, this, [this]() {
+            emit answer(1);
+        });
+        connect(ui->btn2, &QPushButton::clicked, this, [this]() {
+            emit answer(2);
+        });
+        connect(ui->btn3, &QPushButton::clicked, this, [this]() {
+            emit answer(3);
+        });
+        connect(ui->btn4, &QPushButton::clicked, this, [this]() {
+            emit answer(4);
+            emit goNext();
+        });
     }
 
     ~wQuestion() { delete ui; }
 
 signals:
+    void answer(int answerId);
     void goNext();
 
 private:
@@ -168,10 +212,37 @@ public:
         ui->setupUi(this);
     }
 
+    void showRank(const QString &text) {
+        ui->textBrowser->setPlainText(text);
+    }
+
     ~wSummary() { delete ui; }
 
 private:
     Ui::wSummary *ui;
 };
+
+
+class wJoin : public QWidget {
+    Q_OBJECT
+public:
+    explicit wJoin(QWidget *parent = nullptr) : QWidget(parent), ui(new Ui::wJoin) {
+        ui->setupUi(this);
+
+        connect(ui->codeBtn, &QPushButton::clicked, this, [this]() {
+            QString code = ui->codeInput->text();
+            emit joinQuiz(code);
+        });
+    }
+
+    ~wJoin() { delete ui; }
+
+signals:
+    void joinQuiz(QString code);
+
+private:
+    Ui::wJoin *ui;
+};
+
 
 #endif // GUI_H
