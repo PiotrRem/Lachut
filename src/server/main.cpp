@@ -119,9 +119,7 @@ int main(int argc, char** argv){
     if(argc!=2) error(1, 0, "Podaj 1 argument - numer portu");
     signal(SIGINT, ctrl_c);
 
-    if(!BazaQuizow::the().dodajQuiz("Quiz czwarty Żółć")) std::cout<<"quiz zawiera błędy!\n";
-    else BazaQuizow::the().wypiszTrescQuizu(0);
-
+    printf("Serwer Lachut: start\n");
     serwer = new Serwer(argv[1]);
     serwer->obsluguj();
 }

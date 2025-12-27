@@ -111,6 +111,8 @@ bool InstancjaQuizu::kolejnePytanie(bool czyPoczatkowe){
         std::thread(&InstancjaQuizu::przewinPytanie, this, biezacePytanie).detach();
     }
 
+    wyslijPytanie(-1); // do wszystkich
+    /*
     for(auto it : uczestnicy){
         Pytanie bPytanie = quiz.getPytanie(biezacePytanie);
         std::string wiadomosc = "QUESTION \"" + bPytanie.getTresc() + "\" ";
@@ -119,7 +121,33 @@ bool InstancjaQuizu::kolejnePytanie(bool czyPoczatkowe){
         it.first.wyslijWiadomosc(wiadomosc);
         wyslijRanking(it.first.getfd());
     }
+    */
     return true;
+}
+
+bool InstancjaQuizu::wyslijPytanie(int fd){
+    if(tworcaQuizu.getfd()==fd){
+        std::string wiadomosc = "QUESTION ";
+        if(stan == Stan::TRWAJACY) wiadomosc += std::to_string(this->biezacePytanie) + "\n";
+        else wiadomosc += "-1\n";
+        return tworcaQuizu.wyslijWiadomosc(wiadomosc);
+    }
+
+    for(auto it : uczestnicy){
+        if(it.first.getfd()!=fd && fd >= 0) continue;
+
+        if(stan != Stan::TRWAJACY) it.first.wyslijWiadomosc("QUESTION -1\n");
+        else{
+            Pytanie bPytanie = quiz.getPytanie(biezacePytanie);
+            std::string wiadomosc = "QUESTION \"" + bPytanie.getTresc() + "\" ";
+            for(auto odp : bPytanie.getOdpowiedzi()) wiadomosc += "\""+odp.first+"\" ";
+            wiadomosc += "\n";
+            it.first.wyslijWiadomosc(wiadomosc);
+            wyslijRanking(it.first.getfd());
+            if(fd >= 0) return true;
+        }
+    }
+    return fd < 0;
 }
 
 std::string InstancjaQuizu::pobierzPytanieZOdpowiedziami(){

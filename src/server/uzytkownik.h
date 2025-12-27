@@ -78,6 +78,7 @@ class InstancjaQuizu{
         void zakoncz();
         bool usun(int fd);
         void wyslijRanking(int fd);
+        bool wyslijPytanie(int fd);
 
         bool zarejestrujOdpowiedz(int fd, unsigned int nrPytania, std::set<unsigned int> odpowiedzi);
         std::string getRanking(int fd);

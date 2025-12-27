@@ -57,7 +57,6 @@ void Klient::obsluzKomende(const std::string& line) {
         std::cout<<"POST "<< len << std::endl;
         zacznijPobieracPlik(len);
     }
-
     
     else if(cmd == "JOIN"){
         unsigned int id;
@@ -87,10 +86,10 @@ void Klient::obsluzKomende(const std::string& line) {
         else wyslijWiadomosc("FAIL LAUNCH\n");
     }
     
-    else if(cmd == "PICK"){
+    else if(cmd == "SETUP"){
         std::string nazwa;
         std::getline(iss >> std::ws, nazwa);
-        std::cout<<"PICK "<< nazwa << std::endl;
+        std::cout<<"SETUP "<< nazwa << std::endl;
         if(MenegerPokoi::the().znajdzPokoj(fd)==0){
             unsigned int idInstancji = MenegerQuizow::the().dodajInstancjeQuizu(nazwa, fd);
             if(idInstancji!=0){
@@ -98,9 +97,9 @@ void Klient::obsluzKomende(const std::string& line) {
                 std::string odp = "YOURID " + std::to_string(idInstancji) + "\n";
                 wyslijWiadomosc(odp);
             }
-            else wyslijWiadomosc("FAIL PICK\n");
+            else wyslijWiadomosc("FAIL SETUP\n");
         }
-        else wyslijWiadomosc("FAIL PICK\n");
+        else wyslijWiadomosc("FAIL SETUP\n");
     }
     
     else if(cmd == "ANSWER"){
@@ -119,11 +118,16 @@ void Klient::obsluzKomende(const std::string& line) {
         else wyslijWiadomosc("FAIL ANSWER\n");
     }
 
-    else if(cmd == "GETRANK"){
-        std::cout<<"GETRANK"<< std::endl;
+    else if(cmd == "GETRANK" || cmd == "MYSCORE"){
+        std::cout<<cmd<< std::endl;
         MenegerQuizow::the().getInstancjaQuizu(MenegerPokoi::the().znajdzPokoj(fd)).wyslijRanking(fd);
     }
     
+    else if(cmd == "STATUS"){
+        std::cout<<cmd<<std::endl;
+        MenegerQuizow::the().getInstancjaQuizu(MenegerPokoi::the().znajdzPokoj(fd)).wyslijPytanie(fd);
+    }
+
     else if(cmd == "EXIT"){
         std::cout<<"EXIT"<< std::endl;
         

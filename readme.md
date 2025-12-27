@@ -18,11 +18,11 @@ Na razie przewidujemy, że:
     * `POST <długość_pliku>`  
     `<plik>` -> by przesłać na serwer plik z quizem.
     * `LIST` -> by poprosić o listę quizów do wystartowania.
-    * `SETUP <quiz_id>` -> by otrzymać kod do quizu.
-    * `LAUNCH <quiz_id>` -> by wystartować wybrany quiz.
+    * `SETUP <nazwa_quizu>` -> by otrzymać kod do quizu. Nazwa quizu powinna być podana dokładnie tak, jak została wysłana: ze spacjami i dziwnymi znakami, bez cudzysłowów itp.
+    * `LAUNCH` -> by wystartować wybrany quiz.
     * `GETRANK` -> by poprosić o podanie całego rankingu.  uczestnik jedynie liczbę swoich punktów.
-    * `SKIP` -> by pominąć aktualne pytanie.
-    * `STATUS` -> by zapytać o informacje związane z quizem, np. aktualny numer pytania.
+    <!-- * `SKIP` -> by pominąć aktualne pytanie. (Niepotrzebne, bo nie da się skipnąć pytania, tylko trzeba czekać na kolejne)-->
+    * `STATUS` -> by uzyskać w odpowiedzi komunikat QUESTION (powtórzony) dla uczestnika. Dla twórcy komunikat QUESTION z samym numerem pytania. Jeżli quiz się nie rozpoczął, wysłane zostanie "QUESTION -1".
     * `EXIT` -> by poinformować o tym, że się rozłącza.
 
     b) Uczestnik:
