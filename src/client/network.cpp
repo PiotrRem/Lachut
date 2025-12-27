@@ -31,7 +31,7 @@ void NetworkClient::connectToServer(const std::string &host, const std::string &
 
         if (fcntl(sfd, F_SETFL, fcntl(sfd, F_GETFL, 0) | O_NONBLOCK) == -1) continue;
 
-        int fail = connect(sfd, r->ai_addr, r->ai_addrlen);
+        int fail = ::connect(sfd, r->ai_addr, r->ai_addrlen);
         if (!fail || errno == EINPROGRESS) break;
 
         close(sfd);
@@ -50,15 +50,15 @@ void NetworkClient::queueMessage(const std::string &msg) {
     outQueue.push_back({msg, 0});
 }
 
-void NetworkClient::queueFile(QuizFile qf) {
+void NetworkClient::queueFile(const std::string &path, uint16_t size) {
     std::string msg;
-    msg.reserve(5 + 6 + 1 + qf.size); // POST 99999\n
-    msg = "POST " + std::to_string(qf.size) + '\n';
+    msg.reserve(5 + 6 + 1 + size); // POST 99999\n
+    msg = "POST " + std::to_string(size) + "\n";
     
     std::string payload;
-    payload.resize(qf.size);
-    int fd = open(qf.path.c_str(), O_RDONLY);
-    read(fd, payload.data(), qf.size);
+    payload.resize(size);
+    int fd = open(path.c_str(), O_RDONLY);
+    read(fd, payload.data(), size);
     close(fd);
 
     msg += payload;
@@ -99,7 +99,7 @@ void NetworkClient::handleWrite() {
 void NetworkClient::handleRead() {
     if (!connected) return;
 
-    char buf[4096];
+    char buf[1024];
     while (true) {
         int n = recv(sfd, buf, sizeof(buf), 0);
         if (n == 0) {
@@ -123,23 +123,31 @@ void NetworkClient::handleRead() {
             std::string line = inBuffer.substr(0, pos);
             inBuffer.erase(0, pos + 1);
 
-            if (line.rfind("POST ", 0) == 0) {
-                expectedPayload = std::stoi(line.substr(5));
-                receivingFile = true;
-                break;
-            }
+            auto lambda = [&](const std::string &type) -> bool {
+                if (line.rfind(type + " ", 0) == 0) {
+                    fileType = type;
+                    expectedPayload = std::stoi(line.substr(type.length() + 1));
+                    receivingFile = true;
+                    return true;
+                }
+                return false;
+            };
+            if (lambda("LIST")) continue;
+            if (lambda("RANK")) continue;
 
             inQueue.push_back(line);
+            emit msgReceived();
         }
 
         if (receivingFile) {
             if (inBuffer.size() >= expectedPayload) {
                 std::string fileData = inBuffer.substr(0, expectedPayload);
-                inQueue.push_back(fileData);
                 inBuffer.erase(0, expectedPayload);
 
                 receivingFile = false;
                 expectedPayload = 0;
+
+                emit fileReceived(fileType, fileData);
             }
         }
     }

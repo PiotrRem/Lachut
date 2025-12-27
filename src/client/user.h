@@ -5,64 +5,42 @@
 #include "network.h"
 #include "common.h"
 
-// hoster raczej nie bedzie widziec tresci pytan, tylko np 6/12 i skip
 
 class User {
 protected:
     NetworkClient *netClient = nullptr;
-    QuizInfo currQuiz;
 public:
     virtual ~User() = default;
-
-    NetworkClient& getNetClient() { return *netClient; }
-    QuizInfo&      getQuizInfo() { return currQuiz; }
-
     void setNetClient(NetworkClient &nc) { netClient = &nc; }
-    void setCurrentQuiz(QuizInfo &qi) { currQuiz = qi; }
 
-    int connect(const std::string &host, const std::string &port);
     virtual int exit();
-    virtual int proposeNickname(const std::string&) {
-        return -1;
-    }
+    virtual int getRanking() = 0;
 };
 
 
 class QuizHoster : public User {
-protected:
-    QuizFile quizFile;
-    std::string quizCode;
+private:
+    int quizId = -1;
+    std::string quizCode = "111111";
 public:
-    QuizFile&   getQuizFile() { return quizFile; }
-    std::string getQuizCode() { return quizCode; }
-
-    void setQuizFile(QuizFile &qf) { quizFile = qf; }
     void setQuizCode(const std::string &qc) { quizCode = qc; }
+    void setQuizId(int qid) { quizId = qid; }
 
-    int postQuiz();
     int listQuizzes();
+    int postQuiz(const QuizFile &qf);
     int setupQuiz();
-    int startQuiz();
-    int getRanking();
-    int skipQuestion();
-    int checkQuizStatus(); // aktualny nr pytania itp
+    int launchQuiz();
+    int checkQuizStatus();
+    int getRanking() override;
 };
 
 
-class QuizUser : public User {
-protected:
-    QuizQuestion currQuestion;
-    QuizAnswer   questAnswer;
+class QuizPlayer : public User {
 public:
-    QuizQuestion& getCurrentQuestion() { return currQuestion; }
-    QuizAnswer&   getAnswer() { return questAnswer;  }
-
-    void setCurrentQuestion(QuizQuestion &cq) { currQuestion = cq; }
-    void setAnswer(QuizAnswer &qa) { questAnswer = qa; }
-
-    int joinQuiz();
-    int proposeNickname(const std::string &nickname) override;
-    int answer(const QuizAnswer &ans);
+    int joinQuiz(const std::string &code);
+    int proposeNickname(const std::string &nick);
+    int answer(int questionId, int answerId);
     int getOwnScore();
-    int getRanking();
+    int getRanking() override;
+    int handleResponse(const std::string &msg);
 };
