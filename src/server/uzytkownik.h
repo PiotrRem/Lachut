@@ -70,6 +70,8 @@ class InstancjaQuizu{
 
         bool kolejnePytanie(bool czyPoczatkowe);
         void przewinPytanie(unsigned int wystartowanoDlaPytania);
+        unsigned int obliczPunktyWielokrotnyWybor1(unsigned int nrPytania, std::set<unsigned int> odpowiedzi);
+        unsigned int obliczPunktyWielokrotnyWybor2(unsigned int nrPytania, std::set<unsigned int> odpowiedzi);
     public:
         InstancjaQuizu(){}
         InstancjaQuizu(Quiz quiz, int fdTworcy, unsigned int id);

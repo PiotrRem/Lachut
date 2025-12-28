@@ -150,25 +150,7 @@ bool InstancjaQuizu::zarejestrujOdpowiedz(int fd, unsigned int nrPytania, std::s
 
     ktoOdpowiedzial.insert(fd);
 
-    Pytanie pyt = quiz.getPytanie(nrPytania);
-    unsigned int i =0;
-    unsigned int poprawne = 0, niepoprawne = 0, wszystkiePoprawne = 0, zdobytePunkty = 0;
-    for(auto it : pyt.getOdpowiedzi()){
-        if(it.second) wszystkiePoprawne++;
-
-        if(it.second && odpowiedzi.count(i) > 0) poprawne++;
-        else if(!it.second && odpowiedzi.count(i) == 0) poprawne++;
-        else niepoprawne++;
-        i++;
-    }
-
-    if(wszystkiePoprawne > 0 && niepoprawne < poprawne){
-        zdobytePunkty = 100 * (poprawne - niepoprawne) / wszystkiePoprawne;
-        zdobytePunkty *= uczestnicy.size();
-        zdobytePunkty /= (1 + ktoOdpowiedzial.size());
-    }
-
-    for(auto &it : uczestnicy) if(it.first.getfd()==fd) it.second += zdobytePunkty;
+    for(auto &it : uczestnicy) if(it.first.getfd()==fd) it.second += obliczPunktyWielokrotnyWybor2(nrPytania, odpowiedzi);
 
     if(ktoOdpowiedzial.size() >= 2 * uczestnicy.size() / 3) kolejnePytanie(false);
     return true;
@@ -284,4 +266,39 @@ bool InstancjaQuizu::wyslijStatus(int fd){
     }
     return false;
 }
+
+unsigned int InstancjaQuizu::obliczPunktyWielokrotnyWybor1(unsigned int nrPytania, std::set<unsigned int> odpowiedzi){
+    Pytanie pyt = quiz.getPytanie(nrPytania);
+    unsigned int i =0;
+    unsigned int poprawne = 0, niepoprawne = 0, wszystkiePoprawne = 0, zdobytePunkty = 0;
+    for(auto it : pyt.getOdpowiedzi()){
+        if(it.second) wszystkiePoprawne++;
+
+        if(it.second && odpowiedzi.count(i) > 0) poprawne++;
+        else if(!it.second && odpowiedzi.count(i) == 0) poprawne++;
+        else niepoprawne++;
+        i++;
+    }
+
+    if(wszystkiePoprawne > 0 && niepoprawne < poprawne){
+        zdobytePunkty = 100 * (poprawne - niepoprawne) / wszystkiePoprawne;
+        zdobytePunkty *= uczestnicy.size();
+        zdobytePunkty /= (1 + ktoOdpowiedzial.size());
+    }
+    return zdobytePunkty;
+}
+
+unsigned int InstancjaQuizu::obliczPunktyWielokrotnyWybor2(unsigned int nrPytania, std::set<unsigned int> odpowiedzi){
+    Pytanie pyt = quiz.getPytanie(nrPytania);
+    unsigned int zdobytePunkty = 0;
+
+    auto odp = pyt.getOdpowiedzi();
+    bool poprawnie = true;
+    for(auto it : odpowiedzi) poprawnie = poprawnie && odp[it].second;
+    
+    if(poprawnie) zdobytePunkty = 100 * uczestnicy.size() / (1 + ktoOdpowiedzial.size());
+
+    return zdobytePunkty;
+}
+
 //---------------------------------------------------------------------------------------------------
