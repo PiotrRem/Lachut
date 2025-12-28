@@ -269,4 +269,19 @@ void InstancjaQuizu::wyslijRanking(int fd){
 
     for(auto it : uczestnicy) if(it.first.getfd()==fd) it.first.wyslijWiadomosc(wynik);
 }
+
+bool InstancjaQuizu::wyslijStatus(int fd){
+    int nrPyt = biezacePytanie;
+    if(stan != Stan::TRWAJACY) nrPyt = -1;
+    if(tworcaQuizu.getfd()==fd){
+        tworcaQuizu.wyslijWiadomosc("STATUS " + std::to_string(nrPyt) + " " + std::to_string(uczestnicy.size()) + "\n");
+        return true;
+    }
+
+    for(auto it : uczestnicy) if(it.first.getfd()==fd){
+        it.first.wyslijWiadomosc("STATUS " + std::to_string(nrPyt) + " " + std::to_string(uczestnicy.size()) + "\n");
+        return true;
+    }
+    return false;
+}
 //---------------------------------------------------------------------------------------------------

@@ -22,7 +22,7 @@ Na razie przewidujemy, że:
     * `LAUNCH` -> by wystartować wybrany quiz.
     * `GETRANK` -> by poprosić o podanie całego rankingu.  uczestnik jedynie liczbę swoich punktów.
     <!-- * `SKIP` -> by pominąć aktualne pytanie. (Niepotrzebne, bo nie da się skipnąć pytania, tylko trzeba czekać na kolejne)-->
-    * `STATUS` -> by uzyskać w odpowiedzi komunikat QUESTION (powtórzony) dla uczestnika. Dla twórcy komunikat QUESTION z samym numerem pytania. Jeżli quiz się nie rozpoczął, wysłane zostanie "QUESTION -1".
+    * `STATUS` -> by uzyskać w odpowiedzi komunikat o numerze aktualnego pytania i liczbie uczestników.
     * `EXIT` -> by poinformować o tym, że się rozłącza.
 
     b) Uczestnik:
@@ -44,6 +44,7 @@ Na razie przewidujemy, że:
     * `RANK <długość_pliku>`  
     `<plik>` -> plik z całkowitą punktacją wszystkich graczy. Wysyłany po zakończeniu quizu do wszytkich, a do twórcy za każdym razem, gdy o niego poprosi.
     * `QUESTION <nr_pytania> "Treść pytania" "odp 1" "odp 2"...` -> treść pytania z listą odpowiedzi do wyboru.
+    * `STATUS` <nr_pytania> <liczba_uczestników> -> nr bieżącego pytania z aktualną liczbą uczestników.
 2. Serwer również wysyła wszystkie wiadomości jako jedna linia (oprócz plików).
 3. W LIST pierwsza linia zawiera komendę i długość pliku w bajtach. Każda kolejna zawiera unikalną nazwę quziu.
 4. W RANK pierwsza linia zawiera RANK i długość pliku w bajtach. Każda kolejna zawiera nick gracza i liczbę punktów przez niego zdobytych. Lista może być nieposortowana.

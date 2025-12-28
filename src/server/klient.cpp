@@ -125,7 +125,7 @@ void Klient::obsluzKomende(const std::string& line) {
     
     else if(cmd == "STATUS"){
         std::cout<<cmd<<std::endl;
-        MenegerQuizow::the().getInstancjaQuizu(MenegerPokoi::the().znajdzPokoj(fd)).wyslijPytanie(fd);
+        if(!MenegerQuizow::the().getInstancjaQuizu(MenegerPokoi::the().znajdzPokoj(fd)).wyslijStatus(fd)) wyslijWiadomosc("FAIL STATUS\n");
     }
 
     else if(cmd == "EXIT"){
