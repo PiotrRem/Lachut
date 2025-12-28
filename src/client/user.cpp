@@ -22,7 +22,7 @@ int QuizHoster::listQuizzes() {
 }
 
 int QuizHoster::setupQuiz() {
-    netClient->queueMessage("SETUP " + std::to_string(quizId) + "\n");
+    netClient->queueMessage("SETUP " + quizName + "\n");
     return 0;
 }
 
@@ -64,7 +64,7 @@ int QuizPlayer::answer(int questionId, int answerId) {
 }
 
 int QuizPlayer::getOwnScore() {
-    netClient->queueMessage("GETRANK\n");
+    netClient->queueMessage("MYSCORE\n");
     return 0;
 }
 

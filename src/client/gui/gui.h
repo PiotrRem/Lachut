@@ -5,6 +5,7 @@
 #include <QStackedWidget>
 #include <QFileDialog>
 #include <QTimer>
+#include <QRegularExpression>
 
 #include "ui_Connect.h"
 #include "ui_Role.h"
@@ -104,7 +105,7 @@ public:
             emit postQuiz();
         });
         connect(ui->selectBtn, &QPushButton::clicked, this, [this]() {
-            emit selectQuiz(ui->idSpinBox->value());
+            emit selectQuiz(ui->lineEdit->text());
         });
         connect(ui->codeBtn, &QPushButton::clicked, this, [this]() {
             emit requestCode();
@@ -118,13 +119,15 @@ public:
         ui->quizzes->setPlainText(text);
     }
 
+    void setCodeLabel(const QString &code) { ui->codeLabel->setText(code); }
+
     ~wSetup() { delete ui; }
 
 signals:
     void listQuizzes();
     void selectQuizFile(const QString &path);
     void postQuiz();
-    void selectQuiz(int quizId);
+    void selectQuiz(QString name);
     void requestCode();
     void launchQuiz();
 
@@ -139,7 +142,6 @@ class wPanel : public QWidget {
 public:
     explicit wPanel(QWidget *parent = nullptr) : QWidget(parent), ui(new Ui::wPanel) {
         ui->setupUi(this);
-        connect(ui->pushButton, &QPushButton::clicked, this, [this](){ emit goNext(); });// TODO: USUNĄĆ
     }
 
     void showRank(const QString &text) {
@@ -147,9 +149,6 @@ public:
     }
 
     ~wPanel() { delete ui; }
-
-signals:
-    void goNext();
 
 private:
     Ui::wPanel *ui;
@@ -161,13 +160,9 @@ class wWaiting : public QWidget {
 public:
     explicit wWaiting(QWidget *parent = nullptr) : QWidget(parent), ui(new Ui::wWaiting) {
         ui->setupUi(this);
-        connect(ui->pushButton, &QPushButton::clicked, this, [this](){ emit goNext(); });// TODO: USUNĄĆ
     }
 
     ~wWaiting() { delete ui; }
-
-signals:
-    void goNext();
 
 private:
     Ui::wWaiting *ui;
@@ -192,6 +187,30 @@ public:
             emit answer(4);
             emit goNext();
         });
+    }
+
+    void loadQuestion(const QString &raw) {
+        QRegularExpression re("\"([^\"]*)\"");
+        QRegularExpressionMatchIterator it = re.globalMatch(raw);
+
+        QStringList parts;
+        while (it.hasNext()) {
+            parts << it.next().captured(1);
+        }
+
+        if (parts.size() < 1)
+            return;
+
+        ui->qText->setText(parts[0]);
+
+        QPushButton *buttons[4] = { ui->btn1, ui->btn2, ui->btn3, ui->btn4 };
+
+        for (int i = 0; i < 4; i++) {
+            if (i + 1 < parts.size())
+                buttons[i]->setText(parts[i + 1]);
+            else
+                buttons[i]->setText("—");
+        }
     }
 
     ~wQuestion() { delete ui; }

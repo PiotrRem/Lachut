@@ -10,7 +10,7 @@ Klient::~Klient(){
 }
 
 bool Klient::obsluzZdarzenie(){
-    std::cout<< "Obsluga poloczenia "<<fd<<std::endl;
+    std::cout<< "Obsluga polaczenia "<<fd<<std::endl;
 
     char buf[RBUFSIZE];
     ssize_t n = recv(fd, buf, sizeof(buf), 0);

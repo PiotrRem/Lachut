@@ -68,6 +68,7 @@ BazaQuizow& BazaQuizow::the() {
 bool BazaQuizow::dodajQuiz(std::string nazwaPliku){
     Quiz quiz;
     ParserQuizu parser("quizSource/" + nazwaPliku + ".qcf", &quiz);
+    std::cout << "Ładuję quizSource/" << nazwaPliku << ".qcf" << std::endl;
     bool result =  parser.parsujQuiz();
     if(!result) return false;
     if(!quiz.waliduj()) return false;
@@ -107,18 +108,102 @@ std::string BazaQuizow::getListaQuizow(){
     return out;
 }
 
-ParserQuizu::ParserQuizu(std::string nazwaPliku,  Quiz* quiz){
-    f.open(nazwaPliku);
-    if(!f) printf("Nie udało się otworzyć pliku z quizem! (%s)\n", nazwaPliku.c_str());
+ParserQuizu::ParserQuizu(std::string nazwaPliku, Quiz* quiz) {
+    // Otwieramy binarnie, żeby móc wykryć BOM
+    f.open(nazwaPliku, std::ios::binary);
+    if (!f) {
+        printf("Nie udało się otworzyć pliku z quizem! (%s)\n", nazwaPliku.c_str());
+    }
+
+    // Usuń BOM UTF‑8 jeśli jest (EF BB BF)
+    unsigned char bom[3] = {0, 0, 0};
+    f.read(reinterpret_cast<char*>(bom), 3);
+    if (!(bom[0] == 0xEF && bom[1] == 0xBB && bom[2] == 0xBF)) {
+        // Nie było BOM – wracamy na początek
+        f.clear();
+        f.seekg(0);
+    }
+
     this->quiz = quiz;
 }
 
-bool ParserQuizu::parsujQuiz(){
-    quiz->setNazwa(wczytajPomiedzy2('"'));    
-    if(wczytajDo('=')!="pytanie") return false;
-    wczytajPytania();
+static std::string trim(const std::string &s) {
+    size_t a = s.find_first_not_of(" \t\r\n");
+    if (a == std::string::npos) return "";
+    size_t b = s.find_last_not_of(" \t\r\n");
+    return s.substr(a, b - a + 1);
+}
+
+bool ParserQuizu::parsujQuiz() {
+    std::string line;
+
+    // 1. Pierwsza niepusta linia = nazwa w cudzysłowie
+    while (std::getline(f, line)) {
+        if (!trim(line).empty()) break;
+    }
+    if (f.fail()) return false;
+
+    size_t p1 = line.find('"');
+    size_t p2 = line.find('"', p1 + 1);
+    if (p1 == std::string::npos || p2 == std::string::npos) {
+        return false;
+    }
+    quiz->setNazwa(line.substr(p1 + 1, p2 - p1 - 1));
+
+    // 2. Wczytujemy pytania linia po linii
+    Pytanie pyt;
+    bool mamyPytanie = false;
+
+    while (std::getline(f, line)) {
+        std::string t = trim(line);
+        if (t.empty()) continue;
+
+        // pytanie = "..."
+        if (t.rfind("pytanie", 0) == 0) {
+            // jeśli poprzednie pytanie istnieje – dodaj je
+            if (mamyPytanie && !pyt.getTresc().empty()) {
+                quiz->dodajPytanie(pyt);
+            }
+            pyt = Pytanie();
+            mamyPytanie = true;
+
+            size_t q1 = t.find('"');
+            size_t q2 = t.find('"', q1 + 1);
+            if (q1 == std::string::npos || q2 == std::string::npos) return false;
+            pyt.setTresc(t.substr(q1 + 1, q2 - q1 - 1));
+        }
+        // P = "odp" / F = "odp"
+        else if (t.rfind("P", 0) == 0 || t.rfind("F", 0) == 0) {
+            bool correct = (t[0] == 'P');
+            size_t q1 = t.find('"');
+            size_t q2 = t.find('"', q1 + 1);
+            if (q1 == std::string::npos || q2 == std::string::npos) return false;
+            std::string odp = t.substr(q1 + 1, q2 - q1 - 1);
+            pyt.dodajOdpowiedz(std::make_pair(odp, correct));
+        }
+        // limit = 5
+        else if (t.rfind("limit", 0) == 0) {
+            size_t eq = t.find('=');
+            if (eq == std::string::npos) return false;
+            std::string num = trim(t.substr(eq + 1));
+            unsigned int lim = std::stoul(num);
+            pyt.setLimitCzasu(lim);
+        }
+        // cokolwiek innego ignorujemy albo kończymy
+        else {
+            // można zignorować albo potraktować jako błąd; ja ignoruję
+            continue;
+        }
+    }
+
+    // dodaj ostatnie pytanie
+    if (mamyPytanie && !pyt.getTresc().empty()) {
+        quiz->dodajPytanie(pyt);
+    }
+
     return true;
 }
+
 
 std::string ParserQuizu::wczytajPomiedzy2(char znak){
     std::string odczytane = "";

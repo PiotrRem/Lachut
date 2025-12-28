@@ -10,6 +10,8 @@
 #include <error.h>
 #include <errno.h>
 
+#include <iostream>
+
 NetworkClient::~NetworkClient() {
     if (sfd != -1)
         close(sfd);
@@ -47,12 +49,12 @@ void NetworkClient::connectToServer(const std::string &host, const std::string &
 }
 
 void NetworkClient::queueMessage(const std::string &msg) {
+    std::cout << msg << std::endl;
     outQueue.push_back({msg, 0});
 }
 
 void NetworkClient::queueFile(const std::string &path, uint16_t size) {
     std::string msg;
-    msg.reserve(5 + 6 + 1 + size); // POST 99999\n
     msg = "POST " + std::to_string(size) + "\n";
     
     std::string payload;

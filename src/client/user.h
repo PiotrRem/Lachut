@@ -20,11 +20,11 @@ public:
 
 class QuizHoster : public User {
 private:
-    int quizId = -1;
-    std::string quizCode = "111111";
+    std::string quizName = "";
+    std::string quizCode = "";
 public:
     void setQuizCode(const std::string &qc) { quizCode = qc; }
-    void setQuizId(int qid) { quizId = qid; }
+    void setQuizName(const std::string &name) { quizName = name; }
 
     int listQuizzes();
     int postQuiz(const QuizFile &qf);
