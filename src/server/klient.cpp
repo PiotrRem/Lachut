@@ -140,9 +140,12 @@ void Klient::obsluzKomende(const std::string& line) {
 }
 
 void Klient::zacznijPobieracPlik(size_t len) {
+    std::cout << "Pobieranie pliku rozpoczęte:\n";
+    std::cout<<"------------------------------------\n";
     czyWysylaPlik = true;
     dlugoscPliku = len;
     plik.clear();
+    pobierajPlik();
 }
 
 void Klient::pobierajPlik() {
@@ -159,6 +162,7 @@ void Klient::pobierajPlik() {
     zakonczPobieraniePliku();
     
     czyWysylaPlik = false;
+    std::cout<<"Koniec wyslania pliku\n";
     dlugoscPliku = 0;
     plik.clear();
 }
