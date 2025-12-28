@@ -5,6 +5,7 @@
 #include <QStackedWidget>
 #include <QTimer>
 #include <QFile>
+#include <QMessageBox>
 
 #include "gui.h"
 #include "network.h"
@@ -17,6 +18,9 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
 
     void goToSummary();
+    void handleFile(const std::string &type, const std::string &content);
+    void handleMsg(const std::string &type, const std::string &content);
+    void loadQuestion(const QString &raw);
 private:
     QStackedWidget *stack;
 

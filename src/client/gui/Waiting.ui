@@ -59,13 +59,6 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
-          <widget class="QPushButton" name="pushButton">
-           <property name="text">
-            <string>DEBUG</string>
-           </property>
-          </widget>
-         </item>
         </layout>
        </item>
       </layout>
