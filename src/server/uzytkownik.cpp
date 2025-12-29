@@ -111,6 +111,7 @@ bool InstancjaQuizu::kolejnePytanie(bool czyPoczatkowe){
         std::thread(&InstancjaQuizu::przewinPytanie, this, biezacePytanie).detach();
     }
 
+    wyslijPytanie(tworcaQuizu.getfd());
     wyslijPytanie(-1); // do wszystkich
     return true;
 }
@@ -161,6 +162,11 @@ bool InstancjaQuizu::zarejestrujOdpowiedz(int fd, unsigned int nrPytania, std::s
 
     unsigned int prog = std::max(1u, (unsigned int)(2 * uczestnicy.size() / 3));
     if(ktoOdpowiedzial.size() >= prog) kolejnePytanie(false);
+
+    std::string ranking = getRanking();
+    unsigned int dlugosc = ranking.length();
+    tworcaQuizu.wyslijWiadomosc("RANK " + std::to_string(dlugosc) + "\n" + ranking);
+    
     return true;
 }
 
@@ -215,7 +221,12 @@ void InstancjaQuizu::zakoncz(){
 void InstancjaQuizu::przewinPytanie(unsigned int wystartowanoDlaPytania){
     std::this_thread::sleep_for(std::chrono::seconds(quiz.getPytanie(wystartowanoDlaPytania).getLimitCzasu()));
     if(stan != Stan::TRWAJACY) return;
-    if(biezacePytanie==wystartowanoDlaPytania) kolejnePytanie(false);
+    if(biezacePytanie==wystartowanoDlaPytania) {
+        kolejnePytanie(false);
+        std::string ranking = getRanking();
+        unsigned int dlugosc = ranking.length();
+        tworcaQuizu.wyslijWiadomosc("RANK " + std::to_string(dlugosc) + "\n" + ranking);
+    }
     return;
 }
 

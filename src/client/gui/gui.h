@@ -120,6 +120,7 @@ public:
     }
 
     void setCodeLabel(const QString &code) { ui->codeLabel->setText("Twój kod: " + code); }
+    void setQuizLabel(const QString &name) { ui->quizLabel->setText("Wybrany: " + name); }
 
     ~wSetup() { delete ui; }
 
@@ -147,6 +148,9 @@ public:
     void showRank(const QString &text) {
         ui->textBrowser->setPlainText(text);
     }
+
+    void setQuizLabel(const QString &name) { ui->qName->setText(name); }
+    void setQuestionNumLabel(const QString &num) { ui->qNum->setText("Aktualne pytanie: " + num); }
 
     ~wPanel() { delete ui; }
 
@@ -237,6 +241,8 @@ public:
     void showRank(const QString &text) {
         ui->textBrowser->setPlainText(text);
     }
+
+    void setQuizLabel(const QString &name) { ui->quizLabel->setText("Quiz: " + name); }
 
     ~wSummary() { delete ui; }
 

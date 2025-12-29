@@ -6,6 +6,8 @@ void MainWindow::goToSummary() {
 }
 
 void MainWindow::handleFile(const std::string &type, const std::string &content) {
+    std::cout << type << "\n";
+
     QString text = QString::fromStdString(content);
 
     if (type == "LIST") {
@@ -13,8 +15,8 @@ void MainWindow::handleFile(const std::string &type, const std::string &content)
         return;
     }
     if (type == "RANK") {
-        if (stack->currentWidget() == scrSummary) scrSummary->showRank(text);
-        if (hoster && stack->currentWidget() == scrPanel) scrPanel->showRank(text);
+        scrSummary->showRank(text);
+        scrPanel->showRank(text);
     }
 }
 
@@ -69,8 +71,13 @@ void MainWindow::handleMsg(const std::string &type, const std::string &content) 
         std::getline(ss, content);
         if (!content.empty() && content[0] == ' ') content.erase(0, 1);
 
-        stack->setCurrentWidget(scrQuestion);
-        scrQuestion->loadQuestion(QString::fromStdString(content));
+        if (player) {
+            stack->setCurrentWidget(scrQuestion);
+            scrQuestion->loadQuestion(QString::fromStdString(content));
+        } else {
+            scrPanel->setQuestionNumLabel(QString::number(nr + 1));
+        }
+        
         return;
     }
 }
@@ -132,6 +139,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     });
     connect(scrSetup, &wSetup::selectQuiz, this, [&](QString name) {
         hoster->setQuizName(name.toStdString());
+        scrSetup->setQuizLabel(name);
+        scrPanel->setQuizLabel(name);
+        scrSummary->setQuizLabel(name);
     });
     connect(scrSetup, &wSetup::requestCode, this, [&]() {
         hoster->setupQuiz();

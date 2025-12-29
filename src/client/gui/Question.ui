@@ -41,7 +41,7 @@
          <item>
           <widget class="QLabel" name="score">
            <property name="text">
-            <string>Wynik: 1234</string>
+            <string>Wynik: -</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -80,7 +80,7 @@
          <item row="2" column="0" colspan="2">
           <widget class="QLabel" name="qText">
            <property name="text">
-            <string>Lorem ipsum dolor sit amet, consectetur adipiscing elit. In massa diam, molestie quis nisi id, accumsan rhoncus mauris. Suspendisse eu pharetra erat, et tincidunt dolor.</string>
+            <string/>
            </property>
            <property name="alignment">
             <set>Qt::AlignmentFlag::AlignJustify|Qt::AlignmentFlag::AlignVCenter</set>
@@ -112,7 +112,7 @@
             </size>
            </property>
            <property name="text">
-            <string>Odpowiedź 1</string>
+            <string>-</string>
            </property>
           </widget>
          </item>
@@ -125,7 +125,7 @@
             </size>
            </property>
            <property name="text">
-            <string>Odpowiedź 2</string>
+            <string>-</string>
            </property>
           </widget>
          </item>
@@ -138,7 +138,7 @@
             </size>
            </property>
            <property name="text">
-            <string>Odpowiedź 3</string>
+            <string>-</string>
            </property>
           </widget>
          </item>
@@ -151,7 +151,7 @@
             </size>
            </property>
            <property name="text">
-            <string>Odpowiedź 4</string>
+            <string>-</string>
            </property>
           </widget>
          </item>
