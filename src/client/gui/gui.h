@@ -119,7 +119,7 @@ public:
         ui->quizzes->setPlainText(text);
     }
 
-    void setCodeLabel(const QString &code) { ui->codeLabel->setText(code); }
+    void setCodeLabel(const QString &code) { ui->codeLabel->setText("Twój kod: " + code); }
 
     ~wSetup() { delete ui; }
 
@@ -175,18 +175,21 @@ public:
     explicit wQuestion(QWidget *parent = nullptr) : QWidget(parent), ui(new Ui::wQuestion) {
         ui->setupUi(this);
         connect(ui->btn1, &QPushButton::clicked, this, [this]() {
-            emit answer(1);
+            emit answer(0);
         });
         connect(ui->btn2, &QPushButton::clicked, this, [this]() {
-            emit answer(2);
+            emit answer(1);
         });
         connect(ui->btn3, &QPushButton::clicked, this, [this]() {
-            emit answer(3);
+            emit answer(2);
         });
         connect(ui->btn4, &QPushButton::clicked, this, [this]() {
-            emit answer(4);
-            emit goNext();
+            emit answer(3);
         });
+    }
+
+    void setScoreLabel(const QString &content) {
+        ui->score->setText("Wynik: " + content);
     }
 
     void loadQuestion(const QString &raw) {
@@ -209,7 +212,7 @@ public:
             if (i + 1 < parts.size())
                 buttons[i]->setText(parts[i + 1]);
             else
-                buttons[i]->setText("—");
+                buttons[i]->setText("-");
         }
     }
 

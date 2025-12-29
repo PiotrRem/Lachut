@@ -19,17 +19,16 @@ void MainWindow::handleFile(const std::string &type, const std::string &content)
 }
 
 void MainWindow::handleMsg(const std::string &type, const std::string &content) {
-    QString qType = QString::fromStdString(type);
+    std::cout << type << "[" << content << "]\n";
+
     QString qContent = QString::fromStdString(content);
 
-    qDebug() << "t: " << qType << " c: " << qContent;
-
-    if (qType == "FAIL") {
+    if (type == "FAIL") {
         QMessageBox::warning(this, "Błąd", qContent);
         return;
     }
 
-    if (qType == "OK") {
+    if (type == "OK") {
         if (qContent == "JOIN") {
             stack->setCurrentWidget(scrNick);
             return;
@@ -44,14 +43,34 @@ void MainWindow::handleMsg(const std::string &type, const std::string &content) 
         }
     }
 
-    if (qType == "QUESTION") {
-        stack->setCurrentWidget(scrQuestion);
-        scrQuestion->loadQuestion(qContent);
+    if (type == "YOURID") {
+        scrSetup->setCodeLabel(qContent);
         return;
     }
 
-    if (qType == "YOURID") {
-        scrSetup->setCodeLabel(qContent);
+    if (type == "YOURRANK") {
+        scrQuestion->setScoreLabel(qContent);
+    }
+
+    if (type == "QUESTION") {
+        std::string s = content;
+        std::stringstream ss(s);
+
+        int nr = -1;
+        ss >> nr;
+        currQuestionId = nr;
+
+        if (nr == -1) {
+            stack->setCurrentWidget(scrSummary);
+            return;
+        }
+
+        std::string content;
+        std::getline(ss, content);
+        if (!content.empty() && content[0] == ' ') content.erase(0, 1);
+
+        stack->setCurrentWidget(scrQuestion);
+        scrQuestion->loadQuestion(QString::fromStdString(content));
         return;
     }
 }

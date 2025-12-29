@@ -117,11 +117,18 @@ bool InstancjaQuizu::kolejnePytanie(bool czyPoczatkowe){
 
 bool InstancjaQuizu::wyslijPytanie(int fd){
     if(tworcaQuizu.getfd()==fd){
-        std::string wiadomosc = "QUESTION ";
-        if(stan == Stan::TRWAJACY) wiadomosc += std::to_string(this->biezacePytanie) + "\n";
-        else wiadomosc += "-1\n";
+        if(stan != Stan::TRWAJACY){
+            return tworcaQuizu.wyslijWiadomosc("QUESTION -1\n");
+        }
+
+        Pytanie bPytanie = quiz.getPytanie(biezacePytanie);
+        std::string wiadomosc = "QUESTION " + std::to_string(biezacePytanie) + " \"" + bPytanie.getTresc() + "\" ";
+        for(auto odp : bPytanie.getOdpowiedzi()) wiadomosc += "\"" + odp.first + "\" ";
+        wiadomosc += "\n";
+
         return tworcaQuizu.wyslijWiadomosc(wiadomosc);
     }
+
 
     for(auto it : uczestnicy){
         if(it.first.getfd()!=fd && fd >= 0) continue;
@@ -145,14 +152,15 @@ std::string InstancjaQuizu::pobierzPytanieZOdpowiedziami(){
 }
 
 bool InstancjaQuizu::zarejestrujOdpowiedz(int fd, unsigned int nrPytania, std::set<unsigned int> odpowiedzi){
-    if(nrPytania!=biezacePytanie) return false; // czas na to pytanie przeminął
-    for(auto it : ktoOdpowiedzial) if(it==fd) return false; // ty już odpowiedziałeś!
-
+    if(nrPytania!=biezacePytanie) return false; // czas na to pytanie przeminął 
+    if(ktoOdpowiedzial.count(fd)) return false; // ty już odpowiedziałeś!
     ktoOdpowiedzial.insert(fd);
+
 
     for(auto &it : uczestnicy) if(it.first.getfd()==fd) it.second += obliczPunktyWielokrotnyWybor2(nrPytania, odpowiedzi);
 
-    if(ktoOdpowiedzial.size() >= 2 * uczestnicy.size() / 3) kolejnePytanie(false);
+    unsigned int prog = std::max(1u, (unsigned int)(2 * uczestnicy.size() / 3));
+    if(ktoOdpowiedzial.size() >= prog) kolejnePytanie(false);
     return true;
 }
 
@@ -182,11 +190,14 @@ std::string InstancjaQuizu::getRanking(){
 void InstancjaQuizu::zakoncz(){
     if(stan == Stan::TRWAJACY){
         stan = Stan::ZAKONCZONY;
+
         std::string ranking = getRanking();
         unsigned int dlugosc = ranking.length();
 
+        tworcaQuizu.wyslijWiadomosc("QUESTION -1\n");
         tworcaQuizu.wyslijWiadomosc("RANK " + std::to_string(dlugosc) + "\n" + ranking);
         for(auto it : uczestnicy){
+            it.first.wyslijWiadomosc("QUESTION -1\n");
             it.first.wyslijWiadomosc("RANK " + std::to_string(dlugosc) + "\n" + ranking);
             shutdown(it.first.getfd(), SHUT_RDWR);
             close(it.first.getfd());
@@ -203,6 +214,7 @@ void InstancjaQuizu::zakoncz(){
 
 void InstancjaQuizu::przewinPytanie(unsigned int wystartowanoDlaPytania){
     std::this_thread::sleep_for(std::chrono::seconds(quiz.getPytanie(wystartowanoDlaPytania).getLimitCzasu()));
+    if(stan != Stan::TRWAJACY) return;
     if(biezacePytanie==wystartowanoDlaPytania) kolejnePytanie(false);
     return;
 }
@@ -294,7 +306,11 @@ unsigned int InstancjaQuizu::obliczPunktyWielokrotnyWybor2(unsigned int nrPytani
 
     auto odp = pyt.getOdpowiedzi();
     bool poprawnie = true;
-    for(auto it : odpowiedzi) poprawnie = poprawnie && odp[it].second;
+    for(auto it : odpowiedzi){
+        if(it >= odp.size()) return 0;
+        if(!odp[it].second) return 0;
+    }
+
     
     if(poprawnie) zdobytePunkty = 100 * uczestnicy.size() / (1 + ktoOdpowiedzial.size());
 

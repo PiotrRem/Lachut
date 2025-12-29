@@ -2,29 +2,29 @@
 
 pytanie = "Stolica Polski?"
 P = "Warszawa"
-F = "Łódż"
+F = "Łódź"
 F = "Kraków"
 F = "Bruksela"
-limit = 5
+limit = 10
 
 pytanie = "Stolica Niemiec?"
 P = "Berlin"
 F = "Mediolan"
 F = "Monachium"
 F = "Borneo"
-limit = 5
+limit = 10
 
 pytanie = "Stolica Francji?"
 F = "Lyon"
 F = "Vichy"
 F = "Versailles"
 P = "Paryż"
-limit = 5
+limit = 10
 
 pytanie = "Stolica Szwajcarii?"
 F = "Lozanna"
 F = "Zurich"
 F = "Stuttgart"
 P = "Bern"
-limit = 5
+limit = 10
 
