@@ -162,6 +162,7 @@ bool InstancjaQuizu::zarejestrujOdpowiedz(int fd, unsigned int nrPytania, std::s
 
     unsigned int prog = std::max(1u, (unsigned int)(2 * uczestnicy.size() / 3));
     if(ktoOdpowiedzial.size() >= prog) kolejnePytanie(false);
+    if(stan == Stan::ZAKONCZONY) return true;
 
     std::string ranking = getRanking();
     unsigned int dlugosc = ranking.length();
@@ -222,7 +223,8 @@ void InstancjaQuizu::przewinPytanie(unsigned int wystartowanoDlaPytania){
     std::this_thread::sleep_for(std::chrono::seconds(quiz.getPytanie(wystartowanoDlaPytania).getLimitCzasu()));
     if(stan != Stan::TRWAJACY) return;
     if(biezacePytanie==wystartowanoDlaPytania) {
-        kolejnePytanie(false);
+        kolejnePytanie(false); 
+        if(stan == Stan::ZAKONCZONY) return;
         std::string ranking = getRanking();
         unsigned int dlugosc = ranking.length();
         tworcaQuizu.wyslijWiadomosc("RANK " + std::to_string(dlugosc) + "\n" + ranking);
