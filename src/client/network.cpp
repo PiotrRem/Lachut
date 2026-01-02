@@ -13,8 +13,7 @@
 #include <iostream>
 
 NetworkClient::~NetworkClient() {
-    if (sfd != -1)
-        close(sfd);
+    if (sfd != -1) close(sfd);
 }
 
 void NetworkClient::connectToServer(const std::string &host, const std::string &port) {
@@ -24,7 +23,8 @@ void NetworkClient::connectToServer(const std::string &host, const std::string &
     addrinfo *resolved;
 
     if (getaddrinfo(host.c_str(), port.c_str(), &hints, &resolved)) {
-        error(1, errno, "Nie udało się rozwiązać nazwy");
+        fail("Nie udało się rozwiązać nazwy");
+        return;
     }
 
     for (addrinfo *r = resolved; r; r = r->ai_next) {
@@ -33,8 +33,8 @@ void NetworkClient::connectToServer(const std::string &host, const std::string &
 
         if (fcntl(sfd, F_SETFL, fcntl(sfd, F_GETFL, 0) | O_NONBLOCK) == -1) continue;
 
-        int fail = ::connect(sfd, r->ai_addr, r->ai_addrlen);
-        if (!fail || errno == EINPROGRESS) break;
+        int failed = ::connect(sfd, r->ai_addr, r->ai_addrlen);
+        if (!failed || errno == EINPROGRESS) break;
 
         close(sfd);
         sfd = -1;
@@ -42,14 +42,16 @@ void NetworkClient::connectToServer(const std::string &host, const std::string &
 
     freeaddrinfo(resolved);
 
+    if (getaddrinfo(host.c_str(), port.c_str(), &hints, &resolved)) {
+        fail("Nie udało się połączyć");
+        return;
+    }
+
     connecting = true;
     connected = false;
-    hasError = false;
-    lastError.clear();
 }
 
 void NetworkClient::queueMessage(const std::string &msg) {
-    std::cout << msg << std::endl;
     outQueue.push_back({msg, 0});
 }
 
@@ -84,7 +86,7 @@ void NetworkClient::handleWrite() {
     while (!outQueue.empty()) {
         OutMsg &m = outQueue.front();
 
-        int n = send(sfd, m.data.data() + m.sent, m.data.size() - m.sent, 0);
+        int n = send(sfd, m.msg.data() + m.sent, m.msg.size() - m.sent, 0);
         if (n < 0) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) return;
 
@@ -93,7 +95,7 @@ void NetworkClient::handleWrite() {
         }
 
         m.sent += n;
-        if (m.sent == m.data.size())
+        if (m.sent == m.msg.size())
             outQueue.pop_front();
     }
 }
@@ -156,16 +158,14 @@ void NetworkClient::handleRead() {
 }
 
 void NetworkClient::pollEvents() {    
-    if (sfd < 0)
-        return;
+    if (sfd < 0) return;
 
     struct pollfd pfd;
     pfd.fd = sfd;
     pfd.events = POLLIN | POLLOUT;
 
     int ready = poll(&pfd, 1, 0);
-    if (ready <= 0)
-        return;
+    if (ready <= 0) return;
 
     if (connecting && (pfd.revents & POLLOUT)) {
         int err = 0;
@@ -195,14 +195,22 @@ void NetworkClient::pollEvents() {
 }
 
 void NetworkClient::fail(const std::string &err) {
-    connected = false;
-    connecting = false;
-    hasError = true;
-    lastError = err;
-    
     if (sfd != -1) {
         close(sfd);
         sfd = -1;
     }
+
+    connected = false;
+    connecting = false;
+
+    outQueue.clear();
+    inQueue.clear();
+    inBuffer.clear();
+
+    fileType.clear();
+    receivingFile = false;
+    expectedPayload = 0;
+    
+    emit reportError(err);
 }
 

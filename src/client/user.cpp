@@ -1,74 +1,59 @@
 #include "user.h"
 
-
 // UŻYTKOWNIK
 
-int User::exit() {
+void User::exit() {
     netClient->queueMessage("EXIT\n");
-    return 0;
 }
-
 
 // TWÓRCA QUIZU : UŻYTKOWNIK
 
-int QuizHoster::postQuiz(const QuizFile &qf) {
+void QuizHoster::postQuiz(const QuizFile &qf) {
     netClient->queueFile(qf.path, qf.size);
-    return 0;
 }
 
-int QuizHoster::listQuizzes() {
+void QuizHoster::listQuizzes() {
     netClient->queueMessage("LIST\n");
-    return 0;
 }
 
-int QuizHoster::setupQuiz() {
+void QuizHoster::setupQuiz() {
     netClient->queueMessage("SETUP " + quizName + "\n");
-    return 0;
 }
 
-int QuizHoster::launchQuiz() {
+void QuizHoster::launchQuiz() {
     netClient->queueMessage("LAUNCH " + quizCode + "\n");
-    return 0;
 }
 
-int QuizHoster::getRanking() {
+void QuizHoster::getRanking() {
     netClient->queueMessage("GETRANK\n");
-    return 0;
 }
 
-int QuizHoster::checkQuizStatus() {
+void QuizHoster::checkQuizStatus() {
     netClient->queueMessage("STATUS\n");
-    return 0;
 }
-
 
 // UCZESTNIK : UŻYTKOWNIK          
 
-int QuizPlayer::joinQuiz(const std::string &code) {
+void QuizPlayer::joinQuiz(const std::string &code) {
     netClient->queueMessage("JOIN " + code + "\n");
-    return 0;
 }
 
-int QuizPlayer::proposeNickname(const std::string &nick) {
+void QuizPlayer::proposeNickname(const std::string &nick) {
     netClient->queueMessage("NICK " + nick + "\n");
-    return 0;
 }
 
-int QuizPlayer::answer(int questionId, int answerId) {
+void QuizPlayer::answer(int questionId, int answerId) {
     std::string msg = "ANSWER " +
         std::to_string(questionId) + " " +
         std::to_string(answerId) + "\n";
 
     netClient->queueMessage(msg);
-    return 0;
 }
 
-int QuizPlayer::getOwnScore() {
+void QuizPlayer::getOwnScore() {
     netClient->queueMessage("MYSCORE\n");
-    return 0;
 }
 
-int QuizPlayer::getRanking() {
+void QuizPlayer::getRanking() {
     netClient->queueMessage("GETRANK\n");
-    return 0;
 }

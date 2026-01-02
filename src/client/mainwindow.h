@@ -15,13 +15,6 @@
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
-public:
-    explicit MainWindow(QWidget *parent = nullptr);
-
-    void goToSummary();
-    void handleFile(const std::string &type, const std::string &content);
-    void handleMsg(const std::string &type, const std::string &content);
-    void loadQuestion(const QString &raw);
 private:
     QStackedWidget *stack;
 
@@ -45,9 +38,20 @@ private:
 
     QuizFile qf;
     QString assignedQuizCode;
-    QuizInfo selectedQuizInfo;
 
     int currQuestionId = 0;
+
+    bool expectingExit = false;
+
+private slots:
+    void cleanup();
+
+public:
+    explicit MainWindow(QWidget *parent = nullptr);
+
+    void goToSummary();
+    void handleFile(const std::string &type, const std::string &content);
+    void handleMsg(const std::string &type, const std::string &content);
 };
 
 #endif

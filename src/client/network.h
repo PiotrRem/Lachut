@@ -1,12 +1,11 @@
-#pragma once
+#ifndef NETWORK_H
+#define NETWORK_H
+
 #include <string>
 #include <deque>
-#include <vector>
 #include <cstdint>
-#include <atomic>
 #include <QObject>
 
-struct QuizFile;
 
 class NetworkClient : public QObject {
     Q_OBJECT
@@ -14,7 +13,7 @@ private:
     int sfd = -1;
 
     struct OutMsg {
-        std::string data;
+        std::string msg;
         std::size_t sent = 0;
     };
 
@@ -33,8 +32,6 @@ private:
 public:
     bool connecting = false;
     bool connected = false;
-    bool hasError = false;
-    std::string lastError;
 
     NetworkClient() = default;
     ~NetworkClient();
@@ -49,4 +46,7 @@ public:
 signals:
     void fileReceived(const std::string &type, const std::string &content);
     void msgReceived();
+    void reportError(const std::string &err);
 };
+
+#endif // NETWORK_H

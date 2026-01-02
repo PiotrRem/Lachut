@@ -1,13 +1,12 @@
 #include "mainwindow.h"
 
 void MainWindow::goToSummary() {
+    expectingExit = true;
     stack->setCurrentWidget(scrSummary);
     user->getRanking();
 }
 
 void MainWindow::handleFile(const std::string &type, const std::string &content) {
-    std::cout << type << "\n";
-
     QString text = QString::fromStdString(content);
 
     if (type == "LIST") {
@@ -21,11 +20,25 @@ void MainWindow::handleFile(const std::string &type, const std::string &content)
 }
 
 void MainWindow::handleMsg(const std::string &type, const std::string &content) {
-    std::cout << type << "[" << content << "]\n";
-
     QString qContent = QString::fromStdString(content);
 
     if (type == "FAIL") {
+        if (qContent == "JOIN") {
+            QMessageBox::warning(this, "Błąd", "Nie udało się dołączyć do quizu.");
+            return;
+        }
+        if (qContent == "NICK") {
+            QMessageBox::warning(this, "Błąd", "Ten nick jest już zajęty.");
+            return;
+        }
+        if (qContent == "LAUNCH") {
+            QMessageBox::warning(this, "Błąd", "Potrzeba przynajmniej jednego gracza.");
+            return;
+        }
+        if (qContent == "ANSWER") {
+            QMessageBox::warning(this, "Błąd", "Udzieliłeś już odpowiedzi na to pytanie.");
+            return;
+        }
         QMessageBox::warning(this, "Błąd", qContent);
         return;
     }
@@ -41,6 +54,7 @@ void MainWindow::handleMsg(const std::string &type, const std::string &content) 
         }
         if (qContent == "LAUNCH") {
             stack->setCurrentWidget(scrPanel);
+            if (hoster) hoster->checkQuizStatus();
             return;
         }
     }
@@ -55,31 +69,55 @@ void MainWindow::handleMsg(const std::string &type, const std::string &content) 
     }
 
     if (type == "QUESTION") {
-        std::string s = content;
-        std::stringstream ss(s);
+        std::istringstream ss(content);
 
-        int nr = -1;
-        ss >> nr;
-        currQuestionId = nr;
-
-        if (nr == -1) {
-            stack->setCurrentWidget(scrSummary);
+        int num = -1;
+        ss >> num;
+        currQuestionId = num;
+        if (num == -1) {
+            goToSummary();
             return;
         }
 
-        std::string content;
-        std::getline(ss, content);
-        if (!content.empty() && content[0] == ' ') content.erase(0, 1);
+        std::string question;
+        std::getline(ss, question);
 
-        if (player) {
-            stack->setCurrentWidget(scrQuestion);
-            scrQuestion->loadQuestion(QString::fromStdString(content));
+        if (hoster) {
+            scrPanel->setQuestionNumLabel(QString::number(num + 1));
+            hoster->checkQuizStatus();
         } else {
-            scrPanel->setQuestionNumLabel(QString::number(nr + 1));
+            stack->setCurrentWidget(scrQuestion);
+            scrQuestion->loadQuestion(QString::fromStdString(question));
         }
-        
+
         return;
     }
+
+    if (type == "STATUS") {
+        std::istringstream ss(content);
+        int num, userCount;
+        ss >> num >> userCount;
+        currQuestionId = num;
+
+        scrPanel->setUserCount(QString::number(userCount));
+        scrPanel->setQuestionNumLabel(QString::number(num + 1));
+
+        return;
+    }
+}
+
+void MainWindow::cleanup() {
+    user = nullptr;
+    if (hoster) {
+        delete hoster;
+        hoster = nullptr;
+    }
+    if (player) {
+        delete player;
+        player = nullptr;
+    }
+
+    established = false;
 }
 
 
@@ -107,10 +145,41 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     stack->addWidget(scrSummary);
     stack->addWidget(scrJoin);
 
+    // KLIENT SIECIOWY
+
+    connect(&netClient, &NetworkClient::reportError, this, [&](const std::string &err) {        
+        if (expectingExit) {
+            expectingExit = false;
+            QMetaObject::invokeMethod(this, "cleanup", Qt::QueuedConnection);
+            return;
+        }
+
+        QMessageBox::warning(this, "Błąd", QString::fromStdString(err));
+        stack->setCurrentWidget(scrConnect);
+
+        if (!established) return;
+        QMetaObject::invokeMethod(this, "cleanup", Qt::QueuedConnection);
+    });
+    connect(&netClient, &NetworkClient::fileReceived, this, [&](const std::string &type, const std::string &content) {
+        handleFile(type, content);
+    });
+    connect(&netClient, &NetworkClient::msgReceived, this, [&]() {
+        while (netClient.hasMessage()) {
+            std::string line = netClient.popMessage();
+
+            size_t pos = line.find(' ');
+            std::string type =    (pos == std::string::npos) ? line : line.substr(0, pos);
+            std::string content = (pos == std::string::npos) ? ""   : line.substr(pos + 1);
+
+            handleMsg(type, content);
+        }
+    });
+
+    // WSPÓLNE
+
     connect(scrConnect, &wConnect::connectToServer, this, [&](QString ip, QString port) { 
         netClient.connectToServer(ip.toStdString(), port.toStdString());
     });
-
     connect(scrRole, &wRole::chooseRole, this, [&](bool isHoster) {
         if (isHoster) {
             hoster = new QuizHoster();
@@ -121,8 +190,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
             user = player;
             stack->setCurrentWidget(scrJoin);
         }
-
         user->setNetClient(netClient);
+    });
+    connect(scrSummary, &wSummary::goNext, this, [&]() {
+        stack->setCurrentWidget(scrConnect);
     });
 
     // TWÓRCA QUIZU
@@ -141,7 +212,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         hoster->setQuizName(name.toStdString());
         scrSetup->setQuizLabel(name);
         scrPanel->setQuizLabel(name);
-        scrSummary->setQuizLabel(name);
     });
     connect(scrSetup, &wSetup::requestCode, this, [&]() {
         hoster->setupQuiz();
@@ -151,42 +221,17 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     });
 
     // UCZESTNIK QUIZU
+
     connect(scrJoin, &wJoin::joinQuiz, this, [&](QString code) {
         player->joinQuiz(code.toStdString());
     });
-
     connect(scrNick, &wNick::proposeNickname, this, [&](QString nick) {
         player->proposeNickname(nick.toStdString());
-    });
-
-    connect(scrQuestion, &wQuestion::goNext, this, [&]() {
-        goToSummary();
     });
     connect(scrQuestion, &wQuestion::answer, this, [&](int answerId){
         player->answer(currQuestionId, answerId);
     });
-
-    connect(&netClient, &NetworkClient::fileReceived, this, [&](const std::string &type, const std::string &content) {
-        handleFile(type, content);
-    });
-
-    connect(&netClient, &NetworkClient::msgReceived, this, [&]() {
-        while (netClient.hasMessage()) {
-            std::string line = netClient.popMessage();
-
-            size_t pos = line.find(' ');
-
-            std::string type = (pos == std::string::npos) ? line : line.substr(0, pos);
-            std::string content = (pos == std::string::npos) ? "" : line.substr(pos + 1);
-
-            if (!content.empty() && content[0] == ' ')
-                content.erase(0, 1);
-
-            handleMsg(type, content);
-        }
-    });
-
-
+    
     pollTimer.setInterval(10);
     connect(&pollTimer, &QTimer::timeout, this, [&]() {
         netClient.pollEvents();
