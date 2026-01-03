@@ -122,9 +122,6 @@ void MainWindow::cleanup() {
     }
 
     established = false;
-
-    scrSummary->showRank("");
-    scrPanel->showRank("");
 }
 
 
@@ -201,6 +198,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     });
     connect(scrSummary, &wSummary::goNext, this, [&]() {
         stack->setCurrentWidget(scrConnect);
+        scrSummary->showRank("");
+        scrPanel->showRank("");
     });
 
     // TWÓRCA QUIZU
