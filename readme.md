@@ -55,8 +55,8 @@ Na razie przewidujemy, że:
     pytanie = "pytanie znak równości i w nawiasach treść pytania."
     P = "Poprawna odpowiedź"
     F = "Fałyszwa odpowiedź"
-    F = "Fałszywych odpowiedzi może być dowolna liczba"
-    F = "Poprawnych też może być dowolna liczba"
+    F = "Fałszywych odpowiedzi może być od 0 do 4"
+    F = "Poprawnych też może być od 0 do 4. Suma poprawnych i fałszywych odpowiedzi musi być nie większa niż 4 i większa od 0."
     limit = 10
 
     pytanie= "Jedna informacja w linii"
@@ -79,7 +79,7 @@ Na razie przewidujemy, że:
 2. Jeżeli limit=0, to bez ograniczenia czasowego dla pytania.
 3. Limit nie może być ujemny.
 4. Treści pytań i odpowiedzi w cudzysłowie. Cudzysłowów nie wolno zagnieżdzać.
-5. Odpowiedzi (poprawnych i niepoprawnych) może być dowolna liczba większa od 0.
+5. Odpowiedzi (poprawnych i niepoprawnych) może być dowolna liczba od 0 do 4.
 6. Mogą być same poprawne odpowiedzi i same fałszywe.
 
 ### Obsługa wyjątkowych sytuacji
