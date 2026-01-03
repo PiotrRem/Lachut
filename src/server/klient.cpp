@@ -203,6 +203,12 @@ void Klient::zakonczPobieraniePliku(){
     }
 
     wyslijWiadomosc("OK POST\n");
+
+    std::cout<<"LIST"<< std::endl;
+    std::string lista = BazaQuizow::the().getListaQuizow();
+    size_t dlugosc = lista.size();
+    wyslijWiadomosc("LIST " + std::to_string(dlugosc) + "\n" + lista);
+    
     return;
 }
 

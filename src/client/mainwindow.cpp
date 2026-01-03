@@ -57,6 +57,10 @@ void MainWindow::handleMsg(const std::string &type, const std::string &content) 
             if (hoster) hoster->checkQuizStatus();
             return;
         }
+        if (qContent == "POST") {
+            QMessageBox::information(this, "Sukces", "Quiz został dodany.");
+            return;
+        }
     }
 
     if (type == "YOURID") {
@@ -118,6 +122,9 @@ void MainWindow::cleanup() {
     }
 
     established = false;
+
+    scrSummary->showRank("");
+    scrPanel->showRank("");
 }
 
 
