@@ -27,6 +27,16 @@ target_compile_options(server PRIVATE
     -Wextra
 )
 
+add_custom_command(
+    TARGET server
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E remove_directory
+            $<TARGET_FILE_DIR:server>/quizSource
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_SOURCE_DIR}/quizSource
+            $<TARGET_FILE_DIR:server>/quizSource
+)
+
 #
 # Klient
 #
@@ -46,11 +56,3 @@ target_compile_options(client PRIVATE
 # Qt
 find_package(Qt6 COMPONENTS Widgets REQUIRED)
 target_link_libraries(client PRIVATE Qt6::Widgets)
-
-# skopiuj katalog quizSource do folderu build przy każdym buildzie
-add_custom_target(copy_quiz ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/quizSource
-        ${CMAKE_BINARY_DIR}/quizSource
-)
-

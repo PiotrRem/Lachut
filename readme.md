@@ -21,7 +21,6 @@ Na razie przewidujemy, że:
     * `SETUP <nazwa_quizu>` -> by otrzymać kod do quizu. Nazwa quizu powinna być podana dokładnie tak, jak została wysłana: ze spacjami i dziwnymi znakami, bez cudzysłowów itp.
     * `LAUNCH` -> by wystartować wybrany quiz.
     * `GETRANK` -> by poprosić o podanie całego rankingu.  uczestnik jedynie liczbę swoich punktów.
-    <!-- * `SKIP` -> by pominąć aktualne pytanie. (Niepotrzebne, bo nie da się skipnąć pytania, tylko trzeba czekać na kolejne)-->
     * `STATUS` -> by uzyskać w odpowiedzi komunikat o numerze aktualnego pytania i liczbie uczestników.
     * `EXIT` -> by poinformować o tym, że się rozłącza.
 
