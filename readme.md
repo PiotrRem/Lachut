@@ -1,4 +1,8 @@
 # Łachut
+
+Piotr Rembeza 160176  
+Michał Stachowiak 160186
+
 ## Wymagania funkcjonalne
 - Użytkownik (twórca quizu) łączy się z serwerem i wybiera quiz do wystartowania. Otrzymuje wówczas kod quizu. Jeden użytkownik może mieć w danym momencie uruchomiony jeden quiz. Nie może być jednocześnie uczestnikiem i twórcą. Serwer obsługuje wiele quizów na raz.
 - Użytkownik (uczestnik) łączy się z serwerem, podaje kod quizu i do niego dołącza, podając nick. Jeżeli w quizie ktoś inny podał taki nick, serwer prosi o jego zmianę. Jeśli quiz jest już uruchomiony serwer odrzuca zapytanie.
