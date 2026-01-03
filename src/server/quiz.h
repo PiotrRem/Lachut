@@ -75,11 +75,6 @@ class ParserQuizu{
     public:
         ParserQuizu(std::string nazwaPliku, Quiz* quiz);
         bool parsujQuiz();
-        bool parsujNazwe(const std::string &line);
-        bool parsujPytania();
-        bool parsujTrescPytania(const std::string &t, Pytanie &pyt);
-        bool parsujOdpowiedz(const std::string &t, Pytanie &pyt);
-        bool parsujLimit(const std::string &t, Pytanie &pyt);
 };
 
 #endif // QUIZ_H
