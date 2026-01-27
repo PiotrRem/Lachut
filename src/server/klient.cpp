@@ -197,7 +197,15 @@ void Klient::zakonczPobieraniePliku(){
         return;
     }
 
-    if(renameat2(AT_FDCWD, nazwaPlikuTymczasowego.c_str(), AT_FDCWD, ("quizSource/" + quiz.getNazwa() + ".qcf").c_str(), RENAME_NOREPLACE)==-1){
+    //if(renameat2(AT_FDCWD, nazwaPlikuTymczasowego.c_str(), AT_FDCWD, ("quizSource/" + quiz.getNazwa() + ".qcf").c_str(), RENAME_NOREPLACE)==-1){ // To zalezy od systemu, w sali nie działa
+    int tempfd = open(("quizSource/" + quiz.getNazwa() + ".qcf").c_str(), O_RDONLY);
+    if(tempfd!=-1){
+        remove(nazwaPlikuTymczasowego.c_str());
+        close(tempfd);
+        wyslijWiadomosc("FAIL POST : Quiz o tej nazwie już istnieje\n");
+        return;
+    }
+    if(rename(nazwaPlikuTymczasowego.c_str(), ("quizSource/" + quiz.getNazwa() + ".qcf").c_str())==-1){
         wyslijWiadomosc("FAIL POST : Quiz o tej nazwie już istnieje\n");
         return;
     }
